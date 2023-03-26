@@ -1,0 +1,118 @@
+import Model.ResponseModel;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+
+public class TM01 extends JFrame {
+    private JPanel JP01;
+    private JButton rdhClose;
+    private JPanel TM01;
+    private JTextField rdhMsg;
+
+    private JTextField rdhStts;
+    private JTextField rdhCmnt;
+    private JButton rdhSUBMIT;
+    private JButton jumkat;
+    private JButton rdhClear;
+
+    public TM01() throws IOException {
+        setTitle("TM01_22090086_MuhammadRdh_Button");
+        setContentPane(TM01);
+        setMinimumSize(new Dimension(450,474));
+
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setVisible(true);
+
+        rdhSUBMIT.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == rdhSUBMIT) {
+                    try {
+                        URL url = new URL("https://harber.mimoapps.xyz/api/getaccess.php");
+                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        connection.setRequestMethod("DAPATKAN");
+                        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                        String inputLine;
+                        StringBuffer response = new StringBuffer();
+                        while ((inputLine = in.readLine()) != null) {
+                            response.append(inputLine);
+                        }
+                        in.close();
+                        JSONArray jsonArray = new JSONArray(response.toString());
+                        ArrayList<ResponseModel> parsedList = new ArrayList<>();
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            ResponseModel resModel = new ResponseModel();
+                            JSONObject myJSONObject = jsonArray.getJSONObject(i);
+                            resModel.setMassage(myJSONObject.getString("Massage"));
+                            resModel.setStatus(myJSONObject.getString("Status"));
+                            resModel.setCommand(myJSONObject.getString("Comment"));
+                            parsedList.add(resModel);
+                        }
+                        for (int index = 0; index < parsedList.size(); index++) {
+                            rdhMsg.setText(parsedList.get(index).getMassage());
+                            rdhStts.setText(parsedList.get(index).getStatus());
+                            rdhCmnt.setText(parsedList.get(index).getCommand());
+
+                            if (e.getSource() == jumkat && rdhMsg.isFocusOwner()& rdhStts.isFocusOwner()){
+                                String massage = rdhMsg.getText();
+                                int jumlahkata = massage.split("\\s+").length;
+                                jumkat.setText(String.valueOf(jumlahkata));
+                            }
+
+                        }
+                    } catch (IOException ex) {
+                        System.out.println("Data Tidak Terbaca)");
+                    } catch (JSONException ex) {
+                        System.out.println("Data Tidak Benar");
+                    }
+                }
+            }
+
+        });
+        rdhClose.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+            }
+        });
+
+        rdhClear.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                rdhMsg.setText("");
+                rdhStts.setText("");
+                rdhCmnt.setText("");
+            }
+        });
+
+        jumkat.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(rdhMsg.isFocusOwner()){
+                    String massage = rdhMsg.getText();
+                    String status = rdhStts.getText();
+                    String Comment = rdhCmnt.getText();
+                    int jumlahkata = massage.split("\\s+").length;
+                    jumkat.setText(String.valueOf(jumlahkata));
+                }
+            }
+        });
+    }
+
+    public static void main(String[] args) throws IOException{
+        TM01 tm01 = new TM01();
+    }
+}
+
+// Maaf pak hanya bisa segini :)
